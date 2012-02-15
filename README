@@ -1,0 +1,10 @@
+
+Tweets2wordpress - use Twitter streaming API to generate WordPress content
+
+Requirements:
+
+ Tweepy 1.8 - patched
+ sqlite3
+ Wordpress running MySQL
+
+
