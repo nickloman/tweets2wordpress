@@ -25,6 +25,21 @@ import os.path
 
 CONSUMER_KEY = '9seZZJaHlKzdrzfXAcXpQ'
 CONSUMER_SECRET = 'FQbkrYXeTjA1M5JBolXkK1nKIKd7ap0nEN5Dgt5MBTs'
+
+try:
+    import authkeys
+except Exception e:
+    auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+    auth_url = auth.get_authorization_url()
+    print 'Please authorize: ' + auth_url
+    verifier = raw_input('PIN: ').strip()
+    auth.get_access_token(verifier)
+    fh = open("authkeys.py", "w")
+    print >>fh, "ACCESS_KEY = '%s'" % auth.access_token.key
+    print >>fh, "ACCESS_SECRET = '%s'" % auth.access_token.secret
+    fh.close()
+    import authkeys
+
 ACCESS_KEY = authkeys.ACCESS_KEY
 ACCESS_SECRET = authkeys.ACCESS_SECRET
 
