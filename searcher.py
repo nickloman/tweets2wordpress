@@ -12,7 +12,8 @@ CREATE TABLE tweets (
     in_reply_to_user_id VARCHAR(40),
     in_reply_to_user_id_str VARCHAR(40),
     retweet_count INTEGER,
-    retweeted INTEGER
+    retweeted INTEGER,
+    created_at TEXT
 )
 """
 
@@ -28,7 +29,7 @@ CONSUMER_SECRET = 'FQbkrYXeTjA1M5JBolXkK1nKIKd7ap0nEN5Dgt5MBTs'
 
 try:
     import authkeys
-except Exception e:
+except Exception:
     auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
     auth_url = auth.get_authorization_url()
     print 'Please authorize: ' + auth_url
@@ -70,15 +71,16 @@ class Listener ( StreamListener ):
             status.in_reply_to_user_id,
             status.in_reply_to_user_id_str,
             status.retweet_count,
-            "%d" % (status.retweeted,)
+            "%d" % (status.retweeted,),
+            status.created_at
         )
 
         c.execute("""
         INSERT INTO tweets ( id, tweet_id, author, content, in_reply_to_screen_name,
                              in_reply_to_status_id, in_reply_to_status_id_str,
                              in_reply_to_user_id, in_reply_to_user_id_str,
-                             retweet_count, retweeted )
-        VALUES ( NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )""", insert_data)
+                             retweet_count, retweeted, created_at )
+        VALUES ( NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )""", insert_data)
         conn.commit()
         return
 
@@ -101,4 +103,4 @@ if __name__ == "__main__":
 
     listener = Listener()
     stream = Stream(auth, listener);
-    stream.filter(track=['AGBT'])
+    stream.filter(track=[sys.argv[2]])
