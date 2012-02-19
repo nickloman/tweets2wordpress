@@ -6,7 +6,7 @@ import MySQLdb
 dry_run = False
 reverse_tweets = True
 
-db=MySQLdb.connect(host="localhost",user="wordpress", passwd="1YTlXbOO",db="wordpress")
+db=MySQLdb.connect(host="localhost",user="wordpress", passwd="password",db="wordpress")
 db.set_character_set('utf8')
 dbc = db.cursor()
 dbc.execute('SET NAMES utf8;')
