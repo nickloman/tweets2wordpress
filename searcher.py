@@ -13,14 +13,18 @@ CREATE TABLE tweets (
     in_reply_to_user_id_str VARCHAR(40),
     retweet_count INTEGER,
     retweeted INTEGER,
-    created_at TEXT
+    created_at TEXT,
+    retweet_of VARCHAR(40)
 )
 """
 
 import tweepy
 from tweepy.streaming import StreamListener, Stream
-import authkeys
-import sqlite3
+
+try:
+	import sqlite3
+except Exception:
+	from pysqlite2 import dbapi2 as sqlite3
 import sys
 import os.path
 
@@ -61,6 +65,12 @@ class Listener ( StreamListener ):
 
         c = conn.cursor()
 
+	retweeted = False
+	retweet_of = False
+	if 'retweeted_status' in status.__dict__:
+		retweeted = True
+		retweet_of = status.retweeted_status.id_str
+
         insert_data = (
             status.id_str,
             status.author.screen_name,
@@ -71,21 +81,22 @@ class Listener ( StreamListener ):
             status.in_reply_to_user_id,
             status.in_reply_to_user_id_str,
             status.retweet_count,
-            "%d" % (status.retweeted,),
-            status.created_at
+	    retweeted,
+            status.created_at,
+	    retweet_of
         )
 
         c.execute("""
         INSERT INTO tweets ( id, tweet_id, author, content, in_reply_to_screen_name,
                              in_reply_to_status_id, in_reply_to_status_id_str,
                              in_reply_to_user_id, in_reply_to_user_id_str,
-                             retweet_count, retweeted, created_at )
-        VALUES ( NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )""", insert_data)
+                             retweet_count, retweeted, created_at, retweet_of )
+        VALUES ( NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )""", insert_data)
         conn.commit()
         return
 
     def on_error( self, error ):
-        print error
+        print >>sys.stderr, error
         return
 
 #auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
@@ -103,4 +114,4 @@ if __name__ == "__main__":
 
     listener = Listener()
     stream = Stream(auth, listener);
-    stream.filter(track=[sys.argv[2]])
+    stream.filter(track=sys.argv[2:])
